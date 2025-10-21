@@ -13,8 +13,10 @@ class PresentCipher:
     SBOX = [0xC, 0x5, 0x6, 0xB, 0x9, 0x0, 0xA, 0xD,
             0x3, 0xE, 0xF, 0x8, 0x4, 0x7, 0x1, 0x2]
     
-    # PRESENT inverse S-box
-    SBOX_INV = [SBOX.index(x) for x in range(16)]
+    # PRESENT inverse S-box (computed after SBOX is defined)
+    @classmethod
+    def _compute_sbox_inv(cls):
+        return [cls.SBOX.index(x) for x in range(16)]
     
     def __init__(self, key, rounds=32):
         """Initialize with a 80 or 128-bit key"""
@@ -60,7 +62,7 @@ class PresentCipher:
     
     def _sbox_layer(self, state, inverse=False):
         """Apply S-box to each nibble of the state"""
-        sbox = self.SBOX_INV if inverse else self.SBOX
+        sbox = self._compute_sbox_inv() if inverse else self.SBOX
         result = 0
         for i in range(16):  # 64 bits / 4 bits per nibble = 16 nibbles
             nibble = (state >> (i * 4)) & 0xF

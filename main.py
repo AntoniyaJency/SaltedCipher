@@ -180,98 +180,79 @@ def main():
 
 def interactive_mode():
     """Run the application in interactive mode"""
-    print("=== Salted Cipher Modes ===")
-    print("This application demonstrates CFB and CBC encryption modes with salt/IV.")
+    print("\n" + "="*60)
+    print("     SALTED CIPHER MODES - CFB & CBC ENCRYPTION")
+    print("="*60)
+    print("This application demonstrates secure encryption with salt/IV.")
+    
+    # Store key and salt for reuse in the session
+    session_key = os.urandom(16)
+    session_salt = generate_salt(8)
+    
+    print(f"\nSession Key (base64): {base64.b64encode(session_key).decode()}")
+    print(f"Session Salt (base64): {base64.b64encode(session_salt).decode()}")
+    print("\nYou can use these for multiple operations in this session.")
     
     while True:
-        print("\nMain Menu:")
-        print("1. Encrypt data")
-        print("2. Decrypt data")
-        print("3. Generate new key and salt")
-        print("4. Run performance tests")
-        print("5. Exit")
+        print("\n" + "-"*60)
+        print("MAIN MENU:")
+        print("-"*60)
+        print("1. Encrypt text")
+        print("2. Decrypt text")
+        print("3. Encrypt file")
+        print("4. Decrypt file")
+        print("5. Generate new key and salt")
+        print("6. Run performance tests")
+        print("7. Exit")
+        print("-"*60)
         
-        choice = input("Enter your choice (1-5): ").strip()
+        choice = input("Enter your choice (1-7): ").strip()
         
         if choice == '1':
-            encrypt_menu()
+            encrypt_text_menu(session_key, session_salt)
         elif choice == '2':
-            decrypt_menu()
+            decrypt_text_menu(session_key, session_salt)
         elif choice == '3':
-            key = os.urandom(16)
-            salt = generate_salt(8)
-            print(f"\nNew key (base64): {base64.b64encode(key).decode()}")
-            print(f"New salt (base64): {base64.b64encode(salt).decode()}")
-            print("\nNote: In a real application, store these securely!")
+            encrypt_file_menu(session_key, session_salt)
         elif choice == '4':
+            decrypt_file_menu(session_key, session_salt)
+        elif choice == '5':
+            session_key = os.urandom(16)
+            session_salt = generate_salt(8)
+            print(f"\n✓ New key (base64): {base64.b64encode(session_key).decode()}")
+            print(f"✓ New salt (base64): {base64.b64encode(session_salt).decode()}")
+        elif choice == '6':
             print("\nRunning performance tests...")
             from present_cipher import measure_performance
             measure_performance()
-            print("\nPerformance test completed. Check 'encryption_performance.png' for results.")
-        elif choice == '5':
-            print("Goodbye!")
+            print("\n✓ Performance test completed. Check 'encryption_performance.png' for results.")
+        elif choice == '7':
+            print("\nGoodbye!")
             break
         else:
-            print("Invalid choice. Please try again.")
+            print("✗ Invalid choice. Please try again.")
 
 
-def encrypt_menu():
-    """Interactive menu for encryption"""
-    print("\n=== Encryption Menu ===")
+def encrypt_text_menu(key, salt):
+    """Encrypt text with improved UI"""
+    print("\n" + "="*60)
+    print("ENCRYPT TEXT")
+    print("="*60)
     
     # Get encryption mode
     while True:
-        mode = input("Select mode (cfb/cbc): ").lower().strip()
+        mode = input("\nSelect mode (cfb/cbc): ").lower().strip()
         if mode in ['cfb', 'cbc']:
             break
-        print("Invalid mode. Please enter 'cfb' or 'cbc'.")
+        print("✗ Invalid mode. Please enter 'cfb' or 'cbc'.")
     
-    # Get input method
-    print("\nInput options:")
-    print("1. Enter text directly")
-    print("2. Read from file")
-    input_choice = input("Choose input method (1-2): ").strip()
-    
-    if input_choice == '1':
-        input_data = input("\nEnter text to encrypt: ").encode('utf-8')
-    elif input_choice == '2':
-        file_path = input("Enter file path: ").strip()
-        try:
-            with open(file_path, 'rb') as f:
-                input_data = f.read()
-        except Exception as e:
-            print(f"Error reading file: {e}")
-            return
-    else:
-        print("Invalid choice. Returning to main menu.")
+    # Get text to encrypt
+    plaintext = input("\nEnter text to encrypt: ").strip()
+    if not plaintext:
+        print("✗ No text provided.")
         return
     
-    # Get or generate key
-    key_choice = input("Use default key? (y/n): ").lower().strip()
-    if key_choice == 'n':
-        key_b64 = input("Enter key (base64 encoded): ").strip()
-        try:
-            key = base64.b64decode(key_b64)
-        except Exception as e:
-            print(f"Error decoding key: {e}")
-            return
-    else:
-        key = DEFAULT_KEY
-    
-    # Get or generate salt
-    salt_choice = input("Generate new salt? (y/n): ").lower().strip()
-    if salt_choice == 'n':
-        salt_b64 = input("Enter salt (base64 encoded, 8 bytes): ").strip()
-        try:
-            salt = base64.b64decode(salt_b64)
-            if len(salt) != 8:
-                print("Salt must be 8 bytes (64 bits). Using random salt instead.")
-                salt = generate_salt(8)
-        except Exception as e:
-            print(f"Error decoding salt: {e}. Using random salt.")
-            salt = generate_salt(8)
-    else:
-        salt = generate_salt(8)
+    input_data = plaintext.encode('utf-8')
     
     # Perform encryption
     try:
@@ -282,13 +263,16 @@ def encrypt_menu():
             ciphertext, used_salt = cbc_encrypt(input_data, key, salt)
             mode_name = "CBC"
         
-        print(f"\n{mode_name} Encryption successful!")
-        print(f"Salt (base64): {base64.b64encode(used_salt).decode('utf-8')}")
-        
-        # Show first 100 chars of ciphertext in base64
         ciphertext_b64 = base64.b64encode(ciphertext).decode('utf-8')
-        display_text = ciphertext_b64[:100] + ('...' if len(ciphertext_b64) > 100 else '')
-        print(f"Ciphertext (base64, first 100 chars): {display_text}")
+        salt_b64 = base64.b64encode(used_salt).decode('utf-8')
+        
+        print("\n" + "="*60)
+        print(f"✓ {mode_name} ENCRYPTION SUCCESSFUL")
+        print("="*60)
+        print(f"\nOriginal text: {plaintext}")
+        print(f"\nSalt (base64):\n{salt_b64}")
+        print(f"\nCiphertext (base64):\n{ciphertext_b64}")
+        print("\n" + "="*60)
         
         # Save to file option
         save_choice = input("\nSave ciphertext to file? (y/n): ").lower().strip()
@@ -297,71 +281,92 @@ def encrypt_menu():
             try:
                 with open(file_path, 'wb') as f:
                     f.write(ciphertext)
-                print(f"Ciphertext saved to {file_path}")
+                print(f"✓ Ciphertext saved to {file_path}")
             except Exception as e:
-                print(f"Error saving file: {e}")
+                print(f"✗ Error saving file: {e}")
     
     except Exception as e:
-        print(f"Encryption failed: {e}")
+        print(f"✗ Encryption failed: {e}")
 
 
-def decrypt_menu():
-    """Interactive menu for decryption"""
-    print("\n=== Decryption Menu ===")
+def encrypt_file_menu(key, salt):
+    """Encrypt file with improved UI"""
+    print("\n" + "="*60)
+    print("ENCRYPT FILE")
+    print("="*60)
+    
+    # Get encryption mode
+    while True:
+        mode = input("\nSelect mode (cfb/cbc): ").lower().strip()
+        if mode in ['cfb', 'cbc']:
+            break
+        print("✗ Invalid mode. Please enter 'cfb' or 'cbc'.")
+    
+    # Get file path
+    file_path = input("\nEnter file path to encrypt: ").strip()
+    try:
+        with open(file_path, 'rb') as f:
+            input_data = f.read()
+    except Exception as e:
+        print(f"✗ Error reading file: {e}")
+        return
+    
+    # Perform encryption
+    try:
+        if mode == 'cfb':
+            ciphertext, used_salt = cfb_encrypt(input_data, key, salt)
+            mode_name = "CFB"
+        else:  # cbc
+            ciphertext, used_salt = cbc_encrypt(input_data, key, salt)
+            mode_name = "CBC"
+        
+        salt_b64 = base64.b64encode(used_salt).decode('utf-8')
+        
+        print("\n" + "="*60)
+        print(f"✓ {mode_name} ENCRYPTION SUCCESSFUL")
+        print("="*60)
+        print(f"\nFile: {file_path}")
+        print(f"File size: {len(input_data)} bytes")
+        print(f"Encrypted size: {len(ciphertext)} bytes")
+        print(f"\nSalt (base64):\n{salt_b64}")
+        print("\n" + "="*60)
+        
+        # Save encrypted file
+        output_path = input("\nEnter output file path: ").strip()
+        try:
+            with open(output_path, 'wb') as f:
+                f.write(ciphertext)
+            print(f"✓ Encrypted file saved to {output_path}")
+        except Exception as e:
+            print(f"✗ Error saving file: {e}")
+    
+    except Exception as e:
+        print(f"✗ Encryption failed: {e}")
+
+
+def decrypt_text_menu(key, salt):
+    """Decrypt text with improved UI"""
+    print("\n" + "="*60)
+    print("DECRYPT TEXT")
+    print("="*60)
     
     # Get decryption mode
     while True:
-        mode = input("Select mode (cfb/cbc): ").lower().strip()
+        mode = input("\nSelect mode (cfb/cbc): ").lower().strip()
         if mode in ['cfb', 'cbc']:
             break
-        print("Invalid mode. Please enter 'cfb' or 'cbc'.")
+        print("✗ Invalid mode. Please enter 'cfb' or 'cbc'.")
     
-    # Get input method
-    print("\nInput options:")
-    print("1. Enter ciphertext as base64")
-    print("2. Read from file")
-    input_choice = input("Choose input method (1-2): ").strip()
-    
-    if input_choice == '1':
-        ciphertext_b64 = input("\nEnter ciphertext (base64): ").strip()
-        try:
-            ciphertext = base64.b64decode(ciphertext_b64)
-        except Exception as e:
-            print(f"Error decoding base64: {e}")
-            return
-    elif input_choice == '2':
-        file_path = input("Enter file path: ").strip()
-        try:
-            with open(file_path, 'rb') as f:
-                ciphertext = f.read()
-        except Exception as e:
-            print(f"Error reading file: {e}")
-            return
-    else:
-        print("Invalid choice. Returning to main menu.")
+    # Get ciphertext
+    ciphertext_b64 = input("\nEnter ciphertext (base64): ").strip()
+    if not ciphertext_b64:
+        print("✗ No ciphertext provided.")
         return
     
-    # Get key
-    key_choice = input("Use default key? (y/n): ").lower().strip()
-    if key_choice == 'n':
-        key_b64 = input("Enter key (base64 encoded): ").strip()
-        try:
-            key = base64.b64decode(key_b64)
-        except Exception as e:
-            print(f"Error decoding key: {e}")
-            return
-    else:
-        key = DEFAULT_KEY
-    
-    # Get salt
-    salt_b64 = input("Enter salt (base64 encoded, 8 bytes): ").strip()
     try:
-        salt = base64.b64decode(salt_b64)
-        if len(salt) != 8:
-            print("Error: Salt must be 8 bytes (64 bits).")
-            return
+        ciphertext = base64.b64decode(ciphertext_b64)
     except Exception as e:
-        print(f"Error decoding salt: {e}")
+        print(f"✗ Error decoding base64: {e}")
         return
     
     # Perform decryption
@@ -373,20 +378,18 @@ def decrypt_menu():
             plaintext = cbc_decrypt(ciphertext, key, salt)
             mode_name = "CBC"
         
-        print(f"\n{mode_name} Decryption successful!")
+        print("\n" + "="*60)
+        print(f"✓ {mode_name} DECRYPTION SUCCESSFUL")
+        print("="*60)
         
         # Try to decode as text, otherwise show hex
         try:
             plaintext_str = plaintext.decode('utf-8')
-            print("Decrypted text:")
-            print("-" * 50)
-            print(plaintext_str)
-            print("-" * 50)
+            print(f"\nDecrypted text:\n{plaintext_str}")
         except UnicodeDecodeError:
-            print("Decrypted data (hex):")
-            print("-" * 50)
-            print(plaintext.hex())
-            print("-" * 50)
+            print(f"\nDecrypted data (hex):\n{plaintext.hex()}")
+        
+        print("\n" + "="*60)
         
         # Save to file option
         save_choice = input("\nSave decrypted data to file? (y/n): ").lower().strip()
@@ -395,12 +398,65 @@ def decrypt_menu():
             try:
                 with open(file_path, 'wb') as f:
                     f.write(plaintext)
-                print(f"Decrypted data saved to {file_path}")
+                print(f"✓ Decrypted data saved to {file_path}")
             except Exception as e:
-                print(f"Error saving file: {e}")
+                print(f"✗ Error saving file: {e}")
     
     except Exception as e:
-        print(f"Decryption failed: {e}")
+        print(f"✗ Decryption failed: {e}")
+        print("Possible reasons: Incorrect key, incorrect salt, or corrupted ciphertext.")
+
+
+def decrypt_file_menu(key, salt):
+    """Decrypt file with improved UI"""
+    print("\n" + "="*60)
+    print("DECRYPT FILE")
+    print("="*60)
+    
+    # Get decryption mode
+    while True:
+        mode = input("\nSelect mode (cfb/cbc): ").lower().strip()
+        if mode in ['cfb', 'cbc']:
+            break
+        print("✗ Invalid mode. Please enter 'cfb' or 'cbc'.")
+    
+    # Get file path
+    file_path = input("\nEnter encrypted file path: ").strip()
+    try:
+        with open(file_path, 'rb') as f:
+            ciphertext = f.read()
+    except Exception as e:
+        print(f"✗ Error reading file: {e}")
+        return
+    
+    # Perform decryption
+    try:
+        if mode == 'cfb':
+            plaintext = cfb_decrypt(ciphertext, key, salt)
+            mode_name = "CFB"
+        else:  # cbc
+            plaintext = cbc_decrypt(ciphertext, key, salt)
+            mode_name = "CBC"
+        
+        print("\n" + "="*60)
+        print(f"✓ {mode_name} DECRYPTION SUCCESSFUL")
+        print("="*60)
+        print(f"\nFile: {file_path}")
+        print(f"Encrypted size: {len(ciphertext)} bytes")
+        print(f"Decrypted size: {len(plaintext)} bytes")
+        print("\n" + "="*60)
+        
+        # Save decrypted file
+        output_path = input("\nEnter output file path: ").strip()
+        try:
+            with open(output_path, 'wb') as f:
+                f.write(plaintext)
+            print(f"✓ Decrypted file saved to {output_path}")
+        except Exception as e:
+            print(f"✗ Error saving file: {e}")
+    
+    except Exception as e:
+        print(f"✗ Decryption failed: {e}")
         print("Possible reasons: Incorrect key, incorrect salt, or corrupted ciphertext.")
 
 
