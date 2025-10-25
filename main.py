@@ -203,10 +203,11 @@ def interactive_mode():
         print("4. Decrypt file")
         print("5. Generate new key and salt")
         print("6. Run performance tests")
-        print("7. Exit")
+        print("7. Run comprehensive cipher analysis")
+        print("8. Exit")
         print("-"*60)
         
-        choice = input("Enter your choice (1-7): ").strip()
+        choice = input("Enter your choice (1-8): ").strip()
         
         if choice == '1':
             encrypt_text_menu(session_key, session_salt)
@@ -227,6 +228,26 @@ def interactive_mode():
             measure_performance()
             print("\n✓ Performance test completed. Check 'encryption_performance.png' for results.")
         elif choice == '7':
+            print("\nRunning comprehensive cipher analysis...")
+            print("This will compare SaltedCipher with AES, DES, CFB, and CBC modes.")
+            print("This may take a few minutes...\n")
+            try:
+                from performance_analysis import CipherBenchmark
+                benchmark = CipherBenchmark()
+                benchmark.run_benchmarks()
+                benchmark.generate_comparison_table()
+                benchmark.generate_graphs()
+                benchmark.generate_detailed_report()
+                print("\n✓ Analysis complete! Generated files:")
+                print("  • comprehensive_cipher_analysis.png")
+                print("  • cipher_comparison.csv")
+                print("  • cipher_analysis_report.txt")
+                print("  • ANALYSIS_SUMMARY.md")
+            except ImportError:
+                print("✗ performance_analysis module not found. Please ensure it's in the same directory.")
+            except Exception as e:
+                print(f"✗ Error running analysis: {e}")
+        elif choice == '8':
             print("\nGoodbye!")
             break
         else:

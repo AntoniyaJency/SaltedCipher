@@ -1,0 +1,58 @@
+================================================================================
+COMPREHENSIVE CIPHER PERFORMANCE ANALYSIS REPORT
+================================================================================
+
+TESTED CIPHERS:
+--------------------------------------------------------------------------------
+1. AES-ECB (Advanced Encryption Standard - Electronic Codebook)
+2. AES-CBC (Advanced Encryption Standard - Cipher Block Chaining)
+3. AES-CFB (Advanced Encryption Standard - Cipher Feedback)
+4. 3DES-ECB (Triple DES - Electronic Codebook)
+5. 3DES-CBC (Triple DES - Cipher Block Chaining)
+6. 3DES-CFB (Triple DES - Cipher Feedback)
+7. SaltedCipher-CFB (Custom implementation with salt - CFB mode)
+8. SaltedCipher-CBC (Custom implementation with salt - CBC mode)
+
+TEST PARAMETERS:
+--------------------------------------------------------------------------------
+Data Sizes: [8, 64, 512, 4096, 32768, 262144]
+AES Key Size: 128 bits
+3DES Key Size: 192 bits
+SaltedCipher Key Size: 128 bits
+IV/Salt Size: 64-128 bits
+Iterations per test: 50
+
+PERFORMANCE SUMMARY (at 32KB):
+--------------------------------------------------------------------------------
+AES-ECB              | Enc:   0.0639ms | Dec:   0.1096ms | Throughput:   386.96 MB/s
+AES-CBC              | Enc:   0.0893ms | Dec:   0.0716ms | Throughput:   393.22 MB/s
+AES-CFB              | Enc:   1.0937ms | Dec:   1.0334ms | Throughput:    29.41 MB/s
+3DES-ECB             | Enc:   0.8106ms | Dec:   0.8020ms | Throughput:    38.76 MB/s
+3DES-CBC             | Enc:   0.8908ms | Dec:   0.8038ms | Throughput:    36.98 MB/s
+3DES-CFB             | Enc:   6.8976ms | Dec:   6.4743ms | Throughput:     4.68 MB/s
+SaltedCipher-CFB     | Enc:   6.1159ms | Dec:   6.1902ms | Throughput:     5.08 MB/s
+SaltedCipher-CBC     | Enc:   6.1879ms | Dec:   6.0150ms | Throughput:     5.12 MB/s
+
+BEST PERFORMERS:
+--------------------------------------------------------------------------------
+Fastest Encryption:  AES-ECB              (0.0639ms)
+Fastest Decryption:  AES-CBC              (0.0716ms)
+Best Throughput:     AES-CBC              (393.22 MB/s)
+
+ANALYSIS & RECOMMENDATIONS:
+--------------------------------------------------------------------------------
+• AES is significantly faster than 3DES due to modern hardware acceleration
+• AES-ECB is fastest but NOT recommended for security (deterministic)
+• AES-CBC and AES-CFB provide good security with excellent performance
+• 3DES is slower but still secure for legacy systems
+• SaltedCipher provides custom implementation with salt support
+• CFB mode is stream cipher-like (no padding needed)
+• CBC mode requires padding but offers better security properties
+
+SECURITY NOTES:
+--------------------------------------------------------------------------------
+• ECB mode should NOT be used for sensitive data (deterministic)
+• CBC and CFB modes are secure when used correctly
+• Always use random IVs/salts for each encryption
+• AES-256 recommended for highly sensitive data
+• 3DES is deprecated; use AES for new systems
